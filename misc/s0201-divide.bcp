@@ -1,0 +1,32 @@
+func Home(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "This is the home page")
+}
+func About(w http.ResponseWriter, r *http.Request) {
+	strAbout := fmt.Sprintf("This is the about apage and 2 + 3 is %d", addValues(2, 3))
+	_, _ = fmt.Fprintf(w, strAbout)
+}
+
+
+func Divide(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("inside Divide")
+	f, err := divideVals(100.0, 0.0)
+	if err != nil {
+
+		fmt.Println("Error not nil!")
+		fmt.Fprintf(w, "Cannot divide by 0")
+		return
+	}
+	fmt.Println("generating content")
+	contentDivide := fmt.Sprintf("%f divided by %f is %f", 100.0, 10.0, f)
+	fmt.Fprintf(w, contentDivide)
+}
+func addValues(x, y int) int {
+	return x + y
+}
+func divideVals(x, y float32) (float32, error) {
+	if y == 0 {
+		err := errors.New("Can't divide by zero.")
+		return 0, err
+	}
+	return x / y, nil
+}

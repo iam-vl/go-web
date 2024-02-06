@@ -2,47 +2,44 @@ package render
 
 import (
 	"bytes"
-	"fmt"
 	"log"
+	"myapp/pkg/config"
 	"net/http"
 	"path/filepath"
 	"text/template"
 )
 
-func RenderTemplate(w http.ResponseWriter, tmpl string) {
+// var functions = template.FuncMap{}
 
-	// Create a templ cache
-	tc, err := createTemplateCache()
-	if err != nil {
-		log.Fatal(err)
-	}
+// handlers and render need the app config from min
+var app *config.AppConfig
+
+// Sets the config for the template package
+func NewTemplates(a *config.AppConfig) {
+	app = a
+}
+
+func RenderTemplate(w http.ResponseWriter, tmpl string) {
+	// Get template cache from the app config
+	tc := app.TemplateCache
+
 	// Get requested template from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		log.Fatal(err)
+		log.Fatal("Cannot get template from template cache")
 	}
 
 	buf := new(bytes.Buffer)
-	err = t.Execute(buf, nil)
-	if err != nil {
-		log.Println(err)
-	}
+	_ = t.Execute(buf, nil) // Ignore error
 
 	// Render the template
-	_, err = buf.WriteTo(w)
+	_, err := buf.WriteTo(w)
 	if err != nil {
 		log.Println(err)
 	}
-	// parsedTemplate, _ := template.ParseFiles("./templates/"+tmpl, "./templates/base.layout.html")
-
-	// err = parsedTemplate.Execute(w, nil)
-	// if err != nil {
-	// 	fmt.Println("error parsing template:", err)
-	// 	return
-	// }
 }
 
-func createTemplateCache() (map[string]*template.Template, error) {
+func CreateTemplateCache() (map[string]*template.Template, error) {
 	// myCache := make(map[string]*template.Template)
 	myCache := map[string]*template.Template{}
 	pages, err := filepath.Glob("./templates/*.page.tmpl")
@@ -50,10 +47,8 @@ func createTemplateCache() (map[string]*template.Template, error) {
 		return myCache, err
 	}
 	for _, page := range pages {
-		fmt.Println("======PROCESSING PAGE======")
-		fmt.Printf("Page value: %v \tType: %T", page, page)
+
 		name := filepath.Base(page)
-		fmt.Println("Page name:", page)
 		ts, err := template.New(name).ParseFiles(page)
 		if err != nil {
 			return myCache, err

@@ -1,1 +1,3 @@
-# go-web
+# README
+
+Just learning some Golang web development...

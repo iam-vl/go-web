@@ -1,80 +1,73 @@
 package render
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"text/template"
 )
 
-func RenderTemplateTEST(w http.ResponseWriter, tmpl string) {
-	parsedTemplate, _ := template.ParseFiles("./templates/"+tmpl, "./templates/base.layout.html")
+func RenderTemplate(w http.ResponseWriter, tmpl string) {
 
-	err := parsedTemplate.Execute(w, nil)
+	// Create a templ cache
+	tc, err := createTemplateCache()
 	if err != nil {
-		fmt.Println("error parsing template:", err)
-		return
+		log.Fatal(err)
 	}
-}
-
-var tc = make(map[string]*template.Template)
-
-func RenderTemplate(w http.ResponseWriter, t string) {
-	var tmpl *template.Template
-	var err error
-
-	// check to see if already have in in the cache
-	_, inMap := tc[t]
-	if !inMap {
-		// need to create
-		log.Println("Reading template from disk and adding it to cache")
-		err = createTemplateCache(t)
-		if err != nil {
-			log.Println(err)
-		}
-
-	} else {
-		// we have t already
-		log.Println("Using cached template")
+	// Get requested template from cache
+	t, ok := tc[tmpl]
+	if !ok {
+		log.Fatal(err)
 	}
-	tmpl = tc[t]
-	err = tmpl.Execute(w, nil)
+
+	buf := new(bytes.Buffer)
+	err = t.Execute(buf, nil)
 	if err != nil {
 		log.Println(err)
 	}
 
-}
-
-func createTemplateCache(t string) error {
-	line()
-	fmt.Println("Starting create template cache")
-	fmt.Println("Argument:", t)
-	templates := []string{
-		fmt.Sprintf("./templates/%s", t),
-		"./templates/base.layout.tmpl",
-	}
-	fmt.Println("Templates: ", templates)
-
-	// Parse template
-	fmt.Println("Parsing template(s)")
-	tmpl, err := template.ParseFiles(templates...)
-	fmt.Println("TMPL: ", tmpl)
-	fmt.Printf("TMPL type: %T\n", tmpl)
-
+	// Render the template
+	_, err = buf.WriteTo(w)
 	if err != nil {
-		fmt.Println("ERROR:", err)
-		return err
+		log.Println(err)
 	}
+	// parsedTemplate, _ := template.ParseFiles("./templates/"+tmpl, "./templates/base.layout.html")
 
-	// Add template to cache
-	fmt.Println("Adding template to cache")
-
-	tc[t] = tmpl
-	fmt.Println("Entire cache:", tc)
-	return nil
-
+	// err = parsedTemplate.Execute(w, nil)
+	// if err != nil {
+	// 	fmt.Println("error parsing template:", err)
+	// 	return
+	// }
 }
 
-func line() {
-	fmt.Println("==========")
+func createTemplateCache() (map[string]*template.Template, error) {
+	// myCache := make(map[string]*template.Template)
+	myCache := map[string]*template.Template{}
+	pages, err := filepath.Glob("./templates/*.page.tmpl")
+	if err != nil {
+		return myCache, err
+	}
+	for _, page := range pages {
+		fmt.Println("======PROCESSING PAGE======")
+		fmt.Printf("Page value: %v \tType: %T", page, page)
+		name := filepath.Base(page)
+		fmt.Println("Page name:", page)
+		ts, err := template.New(name).ParseFiles(page)
+		if err != nil {
+			return myCache, err
+		}
+
+		matches, err := filepath.Glob("./templates/*.layout.tmpl")
+		if err != nil {
+			return myCache, err
+		}
+		if len(matches) > 0 {
+			ts, err = ts.ParseGlob("./templates/*.layout.tmpl")
+		}
+
+		myCache[name] = ts
+	}
+	return myCache, nil
 }

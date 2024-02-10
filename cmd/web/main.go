@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"myapp/pkg/config"
-	"myapp/pkg/handlers"
-	"myapp/pkg/render"
 	"net/http"
+
+	"github.com/iam-vl/go-web/pkg/config"
+	"github.com/iam-vl/go-web/pkg/handlers"
+	"github.com/iam-vl/go-web/pkg/render"
 )
 
 const portNum = ":8080"

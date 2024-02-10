@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"myapp/pkg/config"
-	"myapp/pkg/models"
-	"myapp/pkg/render"
 	"net/http"
+
+	"github.com/iam-vl/go-web/pkg/config"
+	"github.com/iam-vl/go-web/pkg/models"
+	"github.com/iam-vl/go-web/pkg/render"
 )
 
 var Repo *Repository

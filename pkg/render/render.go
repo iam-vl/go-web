@@ -3,11 +3,12 @@ package render
 import (
 	"bytes"
 	"log"
-	"myapp/pkg/config"
-	"myapp/pkg/models"
 	"net/http"
 	"path/filepath"
 	"text/template"
+
+	"github.com/iam-vl/go-web/pkg/config"
+	"github.com/iam-vl/go-web/pkg/models"
 )
 
 // var functions = template.FuncMap{}
